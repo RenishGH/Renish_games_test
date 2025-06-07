@@ -30,10 +30,4 @@ A classic Snake game implemented in Python using Pygame. Move the snake to colle
 7. Press `ESC` to quit anytime.
 8. After game over, press `R` to restart or `Q` to quit.
 
-## Installation
 
-```bash
-git clone https://github.com/yourusername/snake-game-python.git
-cd snake-game-python
-pip install pygame
-python snake_game.py
