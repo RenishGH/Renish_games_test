@@ -52,9 +52,3 @@ FILE STRUCTURE
 
 Pacman.py   - Main game code  
 README.txt  - Game instructions and details  
-
-------------------------------
-LICENSE
-------------------------------
-
-This game is created for educational and entertainment purposes only.
