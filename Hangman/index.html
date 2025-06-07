@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Renish Games - Hangman</title>
+  <style>
+    :root {
+      --primary-color: #4CAF50; /* Green */
+      --secondary-color: #2196F3; /* Blue */
+      --accent-color: #FFC107; /* Amber */
+      --text-color: #ffffff;
+      --background-gradient-start: #1e3c72; /* Dark Blue */
+      --background-gradient-end: #2a5298;   /* Medium Blue */
+      --button-hover-color: #45a049;
+      --button-active-color: #3e8e41;
+      --disabled-button-bg: #ccc;
+      --disabled-button-text: #666;
+      --heart-color-active: #E53935; /* Red for active hearts */
+      --heart-color-inactive: #757575; /* Gray for lost hearts */
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom, var(--background-gradient-start), var(--background-gradient-end));
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    #splash-screen, #settings-panel, #game-area {
+      display: none;
+      padding: 40px 20px;
+      border-radius: 10px;
+      background-color: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 90%;
+      width: 600px;
+      margin: 20px auto;
+    }
+
+    #splash-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100%;
+      background: linear-gradient(to bottom, var(--background-gradient-start), var(--background-gradient-end));
+    }
+
+    h1, h2, h3 {
+      color: var(--text-color);
+      margin-bottom: 20px;
+    }
+
+    button, select, input[type="text"] {
+      padding: 12px 25px;
+      font-size: 1.1rem;
+      margin: 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      background-color: var(--button-hover-color);
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      background-color: var(--button-active-color);
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background-color: var(--disabled-button-bg);
+      color: var(--disabled-button-text);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    select, input[type="text"] {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 15px;
+      border-radius: 5px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.7) 50%), linear-gradient(135deg, rgba(255,255,255,0.7) 50%, transparent 50%);
+      background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    select option {
+      color: #000;
+      background-color: #fff;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      color: var(--text-color);
+    }
+
+    /* Hearts Container */
+    #lives-display {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+    }
+
+    .heart-icon {
+      width: 40px; /* Size of the heart */
+      height: 40px;
+      fill: var(--heart-color-active); /* Active heart color */
+      transition: fill 0.3s ease-in-out; /* Smooth transition for color change */
+    }
+
+    .heart-icon.lost {
+      fill: var(--heart-color-inactive); /* Color when a life is lost */
+    }
+
+    /* Word Placeholder */
+    #word-placeholder {
+      font-size: 2.5rem;
+      letter-spacing: 15px;
+      margin: 30px 0;
+      word-break: break-all;
+      text-transform: uppercase;
+      font-weight: bold;
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    /* Keyboard Styling */
+    #keyboard {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #keyboard button {
+      margin: 0;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      border-radius: 5px; /* Square buttons */
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #keyboard button:hover {
+      background-color: #1976D2;
+    }
+
+    #keyboard button:disabled {
+      background-color: var(--disabled-button-bg);
+      color: var(--disabled-button-text);
+      cursor: not-allowed;
+    }
+
+    /* Timer and Player Display */
+    #timer, #player-display {
+      font-size: 1.3rem;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+
+    #timer {
+      color: var(--accent-color);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      #game-area, #settings-panel {
+        padding: 20px 10px;
+      }
+      #word-placeholder {
+        font-size: 1.8rem;
+        letter-spacing: 10px;
+      }
+      #keyboard button {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      h2, h3 {
+        font-size: 1.5rem;
+      }
+      .heart-icon {
+        width: 35px;
+        height: 35px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #keyboard button {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+      #word-placeholder {
+        font-size: 1.5rem;
+        letter-spacing: 8px;
+      }
+      button, select, input {
+        font-size: 0.9rem;
+        padding: 10px 20px;
+      }
+      .heart-icon {
+        width: 30px;
+        height: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="splash-screen">
+  <h1>🎮 Renish Games - Hangman 🎮</h1>
+  <button id="start-btn">Start Game</button>
+  <audio id="bg-music" loop>
+    <source src="vgm.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<div id="settings-panel">
+  <h2>Welcome to Hangman!</h2>
+  <label for="player-name">Enter your name:</label>
+  <input type="text" id="player-name" placeholder="Your Name" autocomplete="off" />
+  <br/>
+  <label for="difficulty">Choose Difficulty:</label>
+  <select id="difficulty">
+    <option value="easy">Easy (10 mistakes)</option>
+    <option value="medium" selected>Medium (6 mistakes)</option>
+    <option value="hard">Hard (4 mistakes)</option>
+  </select>
+  <br/>
+  <label for="category">Select Category:</label>
+  <select id="category">
+    <option value="programming">Programming</option>
+    <option value="animals">Animals</option>
+    <option value="countries">Countries</option>
+    <option value="fruits">Fruits</option>
+  </select>
+  <br/>
+  <button id="begin-game">Begin Game</button>
+</div>
+
+<div id="game-area">
+  <h3 id="player-display"></h3>
+  <h3 id="timer">Time Left: 3:00</h3>
+
+  <div id="lives-display">
+    </div>
+
+  <div id="word-placeholder"></div>
+  <div id="keyboard"></div>
+  <button id="restart-btn">Restart Game</button>
+  <button id="new-word-btn" style="display: none;">New Word</button>
+
+  <audio id="correct-sound">
+    <source src="right.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <audio id="wrong-sound">
+    <source src="wrong.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+</div>
+
+<script>
+  const words = {
+    programming: ["PYTHON", "VARIABLE", "FUNCTION", "DEBUG", "ALGORITHM", "JAVASCRIPT", "DATABASE", "FRAMEWORK", "COMPILER", "SYNTAX"],
+    animals: ["ELEPHANT", "GIRAFFE", "KANGAROO", "CROCODILE", "DOLPHIN", "TIGER", "PENGUIN", "CHIMPANZEE", "BUTTERFLY", "RHINOCEROS"],
+    countries: ["CANADA", "BRAZIL", "GERMANY", "AUSTRALIA", "INDIA", "JAPAN", "MEXICO", "EGYPT", "FRANCE", "ARGENTINA"],
+    fruits: ["APPLE", "BANANA", "ORANGE", "GRAPE", "STRAWBERRY", "WATERMELON", "PINEAPPLE", "MANGO", "KIWI", "PEACH"]
+  };
+
+  let selectedWord = "";
+  let guessedLetters = [];
+  let wrongGuesses = 0;
+  let maxWrongGuesses = 6;
+  let timer;
+  let timeLeft = 180;
+
+  // DOM Elements
+  const splash = document.getElementById("splash-screen");
+  const settings = document.getElementById("settings-panel");
+  const game = document.getElementById("game-area");
+  const bgMusic = document.getElementById("bg-music");
+  const startBtn = document.getElementById("start-btn");
+  const beginBtn = document.getElementById("begin-game");
+  const restartBtn = document.getElementById("restart-btn");
+  const newWordBtn = document.getElementById("new-word-btn");
+  const wordDisplay = document.getElementById("word-placeholder");
+  const keyboard = document.getElementById("keyboard");
+  const timerDisplay = document.getElementById("timer");
+  const playerDisplay = document.getElementById("player-display");
+  const livesDisplay = document.getElementById("lives-display");
+
+  // Sound Effects
+  const correctSound = document.getElementById("correct-sound");
+  const wrongSound = document.getElementById("wrong-sound");
+
+
+  // Event Listeners
+  startBtn.addEventListener("click", () => {
+    splash.style.display = "none";
+    settings.style.display = "block";
+    bgMusic.volume = 0.3; // Set a lower volume for background music
+    bgMusic.play().catch(e => console.log("Background music play prevented:", e));
+  });
+
+  beginBtn.addEventListener("click", startGame);
+  restartBtn.addEventListener("click", () => location.reload());
+  newWordBtn.addEventListener("click", startNewWord);
+
+  // Functions
+  function startGame() {
+    const name = document.getElementById("player-name").value.trim() || "Player";
+    const category = document.getElementById("category").value;
+    const difficulty = document.getElementById("difficulty").value;
+
+    playerDisplay.textContent = `Good luck, ${name}!`;
+
+    if (difficulty === "easy") {
+      maxWrongGuesses = 10;
+    } else if (difficulty === "medium") {
+      maxWrongGuesses = 6;
+    } else {
+      maxWrongGuesses = 4;
+    }
+
+    settings.style.display = "none";
+    game.style.display = "block";
+
+    initializeGame(category);
+  }
+
+  function initializeGame(category) {
+    guessedLetters = [];
+    wrongGuesses = 0;
+    timeLeft = 180;
+
+    const categoryWords = words[category];
+    selectedWord = categoryWords[Math.floor(Math.random() * categoryWords.length)];
+
+    generateBlanks();
+    generateKeyboard();
+    displayLives();
+    startTimer();
+    newWordBtn.style.display = "none";
+  }
+
+  function startNewWord() {
+    const category = document.getElementById("category").value;
+    initializeGame(category);
+  }
+
+  function generateBlanks() {
+    wordDisplay.innerHTML = selectedWord
+      .split("")
+      .map(letter => (guessedLetters.includes(letter) ? letter : "_"))
+      .join(" ");
+  }
+
+  function generateKeyboard() {
+    keyboard.innerHTML = "";
+    for (let i = 65; i <= 90; i++) {
+      const letter = String.fromCharCode(i);
+      const btn = document.createElement("button");
+      btn.textContent = letter;
+      btn.dataset.letter = letter;
+      btn.addEventListener("click", () => handleGuess(letter, btn));
+      keyboard.appendChild(btn);
+    }
+  }
+
+  function handleGuess(letter, btn) {
+    btn.disabled = true;
+
+    if (selectedWord.includes(letter)) {
+      guessedLetters.push(letter);
+      generateBlanks();
+      correctSound.currentTime = 0; // Rewind to start
+      correctSound.play().catch(e => console.log("Correct sound play prevented:", e));
+      btn.style.backgroundColor = "#4CAF50"; // Green for correct
+      checkWin();
+    } else {
+      wrongGuesses++;
+      updateLivesDisplay();
+      wrongSound.currentTime = 0; // Rewind to start
+      wrongSound.play().catch(e => console.log("Wrong sound play prevented:", e));
+      btn.style.backgroundColor = "#F44336"; // Red for wrong
+      if (wrongGuesses >= maxWrongGuesses) {
+        endGame(false);
+      }
+    }
+  }
+
+  function checkWin() {
+    const allGuessed = selectedWord.split("").every(letter => guessedLetters.includes(letter));
+    if (allGuessed) {
+      endGame(true);
+    }
+  }
+
+  function displayLives() {
+    livesDisplay.innerHTML = '';
+    for (let i = 0; i < maxWrongGuesses; i++) {
+      const heartSVG = `
+        <svg class="heart-icon" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.15-1.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.85 11.82L12 21.35z"/>
+        </svg>
+      `;
+      livesDisplay.insertAdjacentHTML('beforeend', heartSVG);
+    }
+    updateLivesDisplay();
+  }
+
+  function updateLivesDisplay() {
+    const hearts = livesDisplay.querySelectorAll('.heart-icon');
+    hearts.forEach((heart, index) => {
+      if (index < wrongGuesses) {
+        heart.classList.add('lost');
+      } else {
+        heart.classList.remove('lost');
+      }
+    });
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerDisplay.textContent = `Time Left: ${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        endGame(false);
+      }
+      timeLeft--;
+    }, 1000);
+  }
+
+  function endGame(hasWon) {
+    clearInterval(timer);
+    disableKeyboard();
+
+    if (hasWon) {
+      alert("🎉 Congratulations! You won! 🎉");
+      newWordBtn.style.display = "inline-block";
+      bgMusic.pause(); // Pause background music on win
+    } else {
+      alert(`Game Over! The word was "${selectedWord}". Better luck next time!`);
+      wordDisplay.textContent = selectedWord;
+      bgMusic.pause(); // Pause background music on lose
+    }
+  }
+
+  function disableKeyboard() {
+    const buttons = keyboard.querySelectorAll("button");
+    buttons.forEach(button => {
+      button.disabled = true;
+    });
+  }
+</script>
+
+</body>
+</html>
