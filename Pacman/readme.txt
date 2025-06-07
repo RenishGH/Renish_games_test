@@ -54,16 +54,6 @@ Pacman.py   - Main game code
 README.txt  - Game instructions and details  
 
 ------------------------------
-TO DO / FUTURE IDEAS
-------------------------------
-
-- Add sound effects and music  
-- Add multiple levels  
-- Add power pellets and bonus items  
-- Display high score  
-- Lives counter
-
-------------------------------
 LICENSE
 ------------------------------
 
